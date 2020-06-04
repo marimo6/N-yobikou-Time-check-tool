@@ -79,7 +79,7 @@ hyouji[0].innerHTML+=`
 				<td>論述テスト</td><td>${testCount.essay.good}/${testCount.essay.all}（${Math.round(((testCount.essay.good)/(testCount.essay.all))*100)}%）</td>
 			</tr>
 			<tr>
-				<th>すべてのレポート</th><th>${reportCount.evaluation.good+reportCount.essay.good}/${reportCount.evaluation.all+reportCount.essay.all}（${Math.round(((reportCount.evaluation.good+reportCount.essay.good)/(reportCount.evaluation.all+reportCount.essay.all))*100)}%）</th>
+				<th>すべてのレポート</th><th>${counts.goods.report}/${counts.report}（${Math.round(((counts.goods.report)/(counts.report))*100)}%）</th>
 			</tr>
 			<tr>
 				<td>記述/選択レポート</td><td>${reportCount.evaluation.good}/${reportCount.evaluation.all}（${Math.round(((reportCount.evaluation.good)/(reportCount.evaluation.all))*100)}%）</td>
