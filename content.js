@@ -1,14 +1,17 @@
 function getTime(cle) {let Time = 0;for(var i=0;i<cle.length;i++)Time+=Number(cle[i].innerText.substr(0,2))*60+Number(cle[i].innerText.substr(-2));return Time;}
 function getCount(className) { return {all :document.getElementsByClassName(className).length,good: document.querySelectorAll(`.good.${className}`).length}}
 const format = Time => (`${Math.floor(Time/3600)}時間${Math.floor((Time%3600)/60)}分${(Time%60)}秒`)
-
-let goodtime = getTime(document.querySelectorAll(".good .movie-length"));
-let time      = getTime(document.getElementsByClassName('movie-length'));
-
+var sections = JSON.parse(
+				document
+					.querySelectorAll("div[data-react-class='App.Chapter']")[0]
+					.getAttribute("data-react-props")
+			).chapter.chapter.sections
+// let goodtime = getTime(document.querySelectorAll(".good .movie-length"));
+// let time     = getTime(document.getElementsByClassName('movie-length'));
+let goodtime = sections.reduce((prev, current) => current.resource_type=="movie" && current.passed?prev+current.length:prev, 0);
+let time     = sections.reduce((prev, current) => current.resource_type=="movie"                  ?prev+current.length:prev, 0);
 let hyouji = document.getElementsByClassName('description');
-
 if(hyouji === undefined) location.reload();
-
 let movieCount = getCount("movie");
 let testCount  = {
 	essay : getCount("essay-test"),
@@ -18,11 +21,9 @@ let reportCount= {
 	essay: getCount("essay-report"),
 	evaluation: getCount("evaluation-report")
 }
-
 let timesStyle = document.createElement('style');
 	timesStyle.type = "text/css";
 document.getElementsByTagName('head').item(0).appendChild(timesStyle);
-
 let sheet = timesStyle.sheet,
 	idx   = sheet.length
 sheet.insertRule(`
@@ -48,7 +49,6 @@ let counts = {
 }
 counts.all  = counts.test+counts.report+movieCount.all
 counts.good = counts.goods.test+counts.goods.report+movieCount.good
-
 hyouji[0].innerHTML+=`
 <div class='u-card'>
 	<div class='u-list-header typo-list-title'>この単元の進捗状況</div>
