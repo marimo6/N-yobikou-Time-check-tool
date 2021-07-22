@@ -11,15 +11,20 @@ var sections = JSON.parse(
 
 // let goodtime = getTime(document.querySelectorAll(".good .movie-length"));
 // let time     = getTime(document.getElementsByClassName('movie-length'));
-
-let goodtime = sections.reduce((prev, current) => current.resource_type=="movie" && current.passed?prev+current.length:prev, 0);
-let time     = sections.reduce((prev, current) => current.resource_type=="movie"                  ?prev+current.length:prev, 0);
+let goodtime             = sections.reduce((prev, current) => current.resource_type=="movie" && current.passed                                     ?prev+current.length:prev, 0);
+let time                 = sections.reduce((prev, current) => current.resource_type=="movie"                                                       ?prev+current.length:prev, 0);
+let supplement_time      = sections.reduce((prev, current) => current.resource_type=="movie" && current.material_type=="supplement"                ?prev+current.length:prev, 0);
+let good_supplement_time = sections.reduce((prev, current) => current.resource_type=="movie" && current.material_type=="supplement"&&current.passed?prev+current.length:prev, 0);
 
 let hyouji = document.getElementsByClassName('description');
 
 if(hyouji === undefined) location.reload();
 
-let movieCount = getCount("movie");
+let movieCount = {
+	all: getCount("movie"),
+	supplement: getCount("movie supplement"),
+	good_supplement: getCount("movie good supplement")
+}
 let testCount  = {
 	essay : getCount("essay-test"),
 	evaluation: getCount("evaluation-test")
@@ -56,8 +61,12 @@ let counts = {
 		report: reportCount.evaluation.good+reportCount.essay.good,
 	}
 }
-counts.all  = counts.test+counts.report+movieCount.all
-counts.good = counts.goods.test+counts.goods.report+movieCount.good
+counts.main_all        = counts.test+counts.report+movieCount.all.all-movieCount.supplement.all
+counts.supplement_all  = movieCount.supplement.all
+counts.all             = counts.test+counts.report+movieCount.all.all
+counts.main_good       = counts.goods.test+counts.goods.report+movieCount.all.good-movieCount.good_supplement.all
+counts.supplement_good = movieCount.good_supplement.all
+counts.good            = counts.goods.test+counts.goods.report+movieCount.all.good
 
 hyouji[0].innerHTML+=`
 <div class='u-card'>
@@ -66,21 +75,33 @@ hyouji[0].innerHTML+=`
 		<table class='counts'>
 			<tr>
 				<th>全体</th><th>${counts.good}/${counts.all}（${Math.round(counts.good/counts.all*100)}%）</th>
+				<th>必修授業</th><th>${counts.main_good}/${counts.main_all}（${Math.round(counts.main_good/counts.main_all*100)}%）</th>
+				<th>Nプラス授業</th><th>${counts.supplement_good}/${counts.supplement_all}（${Math.round(counts.supplement_good/counts.supplement_all*100)}%）</th>
 			</tr>
 			<tr>
 				<th>すべての授業</th><th>${format(time)}</th>
+				<th>すべての必修授業</th><th>${format(time-supplement_time)}</th>
+				<th>すべてのNプラス授業</th><th>${format(supplement_time)}</th>
 			</tr>
 			<tr>
 				<td>視聴済み</td><td>${format(goodtime)}（${Math.round((goodtime / time) * 100)}%）</td>
+				<td>視聴済み</td><td>${format(goodtime-good_supplement_time)}（${Math.round(((goodtime-good_supplement_time) / (time-supplement_time)) * 100)}%）</td>
+				<td>視聴済み</td><td>${format(good_supplement_time)}（${Math.round((good_supplement_time / supplement_time) * 100)}%）</td>
 			</tr>
 			<tr>
 				<td>未視聴</td><td>${format(time-goodtime)}</td>
+				<td>未視聴</td><td>${format((time-supplement_time)-(goodtime-good_supplement_time))}</td>
+				<td>未視聴</td><td>${format(supplement_time-good_supplement_time)}</td>
 			</tr>
 			<tr>
-				<td>授業動画数</td><td>${movieCount.good}/${movieCount.all}（${Math.round((movieCount.good / movieCount.all) * 100)}%）</td>
+				<td>授業動画数</td><td>${movieCount.all.good}/${movieCount.all.all}（${Math.round((movieCount.all.good / movieCount.all.all) * 100)}%）</td>
+				<td>必修授業動画数</td><td>${movieCount.all.good-movieCount.good_supplement.all}/${movieCount.all.all-movieCount.supplement.all}（${Math.round(((movieCount.all.good-movieCount.good_supplement.all) / (movieCount.all.all-movieCount.supplement.all)) * 100)}%）</td>
+				<td>Nプラス授業動画数</td><td>${movieCount.good_supplement.all}/${movieCount.supplement.all}（${Math.round((movieCount.good_supplement.all / movieCount.supplement.all) * 100)}%）</td>
 			</tr>
 			<tr>
-				<td>動画平均時間</td><td>${format(Math.round(time/movieCount.all))}</td>
+				<td>動画平均時間</td><td>${format(Math.round(time/movieCount.all.all+movieCount.supplement.all))}</td>
+				<td>必修動画平均時間</td><td>${format(Math.round((time-supplement_time)/(movieCount.all.all-movieCount.supplement.all)))}</td>
+				<td>Nプラス動画平均時間</td><td>${format(Math.round(supplement_time/movieCount.supplement.all))}</td>
 			</tr>
 			<tr>
 				<th>すべてのテスト</th><th>${testCount.evaluation.good+testCount.essay.good}/${testCount.evaluation.all+testCount.essay.all}（${Math.round(((testCount.evaluation.good+testCount.essay.good)/(testCount.evaluation.all+testCount.essay.all))*100)}%）</th>
